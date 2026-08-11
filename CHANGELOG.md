@@ -63,6 +63,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   operation is resolved, with an operation level parameter overriding the
   path level one on matching `name` + `in`. The same merge is applied to
   webhooks and callbacks, which are Path Item objects as well. (#61)
+- OpenAPI 3.0 `nullable: true` is no longer discarded when a schema is
+  reached through `$ref`. `ScalarSiblingMerger::merge()` combined the `$ref`
+  stub's `nullable` flag with the resolved target's using a logical AND, and
+  because `Schema::$nullable` defaults to `false` a bare `{$ref: ...}` stub
+  always evaluated `false && true` — erasing the target's nullability, so a
+  legitimate `null` was rejected by `TypeValidator`. The flag now merges with
+  OR: per OpenAPI 3.0 a `nullable` sibling next to `$ref` can only widen the
+  target, and there is no spelling for "narrow this to non-nullable" (#64).
 
 ## [0.7.0]
 
