@@ -71,6 +71,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   legitimate `null` was rejected by `TypeValidator`. The flag now merges with
   OR: per OpenAPI 3.0 a `nullable` sibling next to `$ref` can only widen the
   target, and there is no spelling for "narrow this to non-nullable" (#64).
+- A `null` permitted by a branch of an `allOf`/`anyOf`/`oneOf` is no longer
+  rejected before any branch runs. The null pre-check that guards property
+  and item validation computed `$allowNull` from the immediate schema node,
+  but a composition node carries no `type` and no `nullable` — both live in
+  its branches — so `InvalidDataTypeException` fired before a single branch
+  was evaluated. This made every nullable attribute unrepresentable in
+  JSON:API-style documents, where resources are modelled as `allOf`
+  compositions. Composition and `$ref` nodes now defer the decision to the
+  branch or resolved target, which already evaluates `nullable` correctly.
+  Nulls no branch permits are still rejected, and now carry the failing
+  branch's data path instead of a pathless error (#66).
+- The same rule was implemented nine times and the copies disagreed — only
+  two consulted `$ref`, so a `$ref` property that accepted `null` in one code
+  path was rejected in another. All nine now delegate to a single
+  `SchemaValueNormalizer::allowsNull()` helper, closing the divergence across
+  `properties`, `items`, `prefixItems`, `dependentSchemas`, `if`/`then`/
+  `else`, `not`, and composition branches (#66).
 
 ## [0.7.0]
 

@@ -126,8 +126,7 @@ final readonly class OneOfValidatorWithContext
             $schemaPath = sprintf('/oneOf/%d', $index);
 
             try {
-                $allowNull = $context->nullableAsType && ($subSchema->nullable
-                    || SchemaValueNormalizer::doesTypeIncludeNull($subSchema->type));
+                $allowNull = SchemaValueNormalizer::allowsNull($subSchema, $context->nullableAsType);
                 $normalizedData = SchemaValueNormalizer::normalize($data, $allowNull);
                 $rootValidator->validateWithContext($normalizedData, $subSchema, $childContext);
                 ++$validCount;
