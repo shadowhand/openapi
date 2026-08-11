@@ -97,6 +97,14 @@ internal-only unless explicitly marked as public API.
 
 ### Fixed
 
+- `anyOf`/`oneOf` no longer depend on branch declaration order. The
+  `MAX_COMPOSITION_ERRORS` cap in `AbstractCompositionalValidator` used
+  `return` to stop collecting errors, which also abandoned the remaining
+  branches — so a branch that would match went unevaluated whenever
+  earlier branches produced 20+ errors, and `anyOf` reported "At least
+  one of the schemas must match, but none did". The cap now bounds error
+  collection only; every branch is still evaluated. Error output is
+  unchanged (20 errors plus one `TooManyErrorsError`). (#54)
 - `null` is now accepted for `$ref` properties/items when the resolved
   target schema allows `null` via `type: [..., 'null']` (previously only
   an explicit `nullable: true` sibling on the stub was honoured).
